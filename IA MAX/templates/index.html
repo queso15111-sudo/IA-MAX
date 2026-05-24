@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAX - Sistema Multimodal Completo</title>
+    <style>
+        :root {
+            --bg-principal: #0b0c10;
+            --bg-sidebar: #11141a;
+            --neon-azul: #66fcf1;
+            --neon-verde: #45f3ff;
+            --borde-cyber: #2f3e46;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-principal);
+            color: #ecf0f1;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 280px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid rgba(102, 252, 241, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 15px;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+            z-index: 5;
+        }
+
+        .brand-title {
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--neon-azul);
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(102, 252, 241, 0.3);
+        }
+
+        .btn-nuevo {
+            background: linear-gradient(135deg, #1f4068, #162447);
+            color: #fff;
+            border: 1px solid var(--neon-azul);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-nuevo:hover {
+            background: var(--neon-azul);
+            color: #000;
+            box-shadow: 0 0 15px rgba(102, 252, 241, 0.4);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 10px 12px 10px 35px;
+            background-color: #1b222c;
+            border: 1px solid var(--borde-cyber);
+            border-radius: 20px;
+            color: #fff;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #55677d;
+        }
+
+        .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #55677d;
+            margin: 10px 0 8px 5px;
+            font-weight: 700;
+        }
+
+        #lista-chats, #lista-notebooks {
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .chat-item, .notebook-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 13px;
+            color: #94a3b8;
+            transition: all 0.2s;
+        }
+
+        .chat-item:hover, .chat-item.activo {
+            background-color: #1b222c;
+            color: #fff;
+            border-left: 3px solid var(--neon-azul);
+        }
+
+        .notebook-item:hover {
+            background-color: #1b222c;
+            color: var(--neon-verde);
+        }
+
+        #main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-principal);
+            position: relative;
+        }
+
+        .auth-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-principal);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .auth-box {
+            background-color: #11141a;
+            border: 1px solid rgba(102, 252, 241, 0.1);
+            padding: 40px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            text-align: center;
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 14px;
+            background-color: #1b222c;
+            border: 1px solid var(--borde-cyber);
+            border-radius: 8px;
+            color: #fff;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .auth-box button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #66fcf1, #45f3ff);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        #chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 20px;
+        }
+
+        #header-chat {
+            padding: 15px 25px;
+            background-color: #11141a;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 15px 20px;
+            border-radius: 16px;
+            line-height: 1.6;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #1f4068, #162447);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ia-message {
+            background-color: #11141a;
+            color: #e2e8f0;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border-left: 4px solid var(--neon-azul);
+        }
+
+        .chat-img-render {
+            max-width: 100%;
+            max-height: 350px;
+            border-radius: 10px;
+            border: 1px solid var(--borde-cyber);
+            margin-top: 5px;
+        }
+
+        pre {
+            background-color: #05070a;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #1f2d3d;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            color: #39ecff;
+        }
+
+        #preview-container {
+            display: none;
+            padding: 10px;
+            background-color: #1b222c;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #preview-img {
+            height: 50px;
+            border-radius: 6px;
+            border: 1px solid var(--neon-azul);
+        }
+
+        .btn-cancelar-img {
+            background: none;
+            border: none;
+            color: #ff4a4a;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #input-area {
+            padding: 12px;
+            background-color: #11141a;
+            display: flex;
+            gap: 12px;
+            border-radius: 14px;
+            align-items: center;
+        }
+
+        #selector-modelo {
+            background-color: #1b222c;
+            border: 1px solid var(--borde-cyber);
+            color: #fff;
+            padding: 12px;
+            border-radius: 10px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-adjuntar {
+            background-color: #1b222c;
+            border: 1px solid var(--borde-cyber);
+            color: #fff;
+            padding: 12px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-adjuntar:hover {
+            border-color: var(--neon-azul);
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 14px;
+            background-color: #1b222c;
+            border: 1px solid var(--borde-cyber);
+            border-radius: 10px;
+            color: #fff;
+            outline: none;
+        }
+
+        #send-btn {
+            background: linear-gradient(135deg, #66fcf1, #45f3ff);
+            color: #000;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div class="brand-title">⚙️ MAX Multimodal</div>
+        <button class="btn-nuevo" onclick="crearNuevoChat()">+ NUEVA CONVERSACIÓN</button>
+        
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="chat-search" class="search-bar" placeholder="Buscar conversación..." oninput="filtrarChats()">
+        </div>
+
+        <div class="section-label">Historial de Entrada</div>
+        <ul id="lista-chats"></ul>
+
+        <div class="section-label">Notebooks / Proyectos</div>
+        <ul id="lista-notebooks">
+            <li class="notebook-item" onclick="alert('Abriendo espacio...')">📁 Espacio_Trabajo_Multimodal</li>
+            <li class="notebook-item" onclick="crearNuevoNotebook()">➕ Crear nuevo notebook...</li>
+        </ul>
+    </div>
+
+    <div id="main-container">
+
+        <div id="login-screen" class="auth-screen">
+            <div class="auth-box">
+                <h2>Acceso de Sistema</h2>
+                <input type="email" id="login-email" placeholder="ID de Usuario (Correo)">
+                <input type="password" id="login-pass" placeholder="Contraseña">
+                <button onclick="ejecutarLogin()">AUTENTICAR</button>
+                <p>¿No tienes cuenta? <span onclick="cambiarVistaAuth('register')">Registrar</span></p>
+            </div>
+        </div>
+
+        <div id="register-screen" class="auth-screen" style="display: none;">
+            <div class="auth-box">
+                <h2>Registrar Nodo</h2>
+                <input type="email" id="reg-email" placeholder="Correo">
+                <input type="password" id="reg-pass" placeholder="Contraseña (mínimo 6)">
+                <button onclick="ejecutarRegistro()">CREAR</button>
+                <p>¿Ya tienes cuenta? <span onclick="cambiarVistaAuth('login')">Conectar</span></p>
+            </div>
+        </div>
+
+        <div id="verify-screen" class="auth-screen" style="display: none;">
+            <div class="auth-box">
+                <h2>Enlace de Seguridad</h2>
+                <p style="margin-bottom:20px; font-size:12px; color:#a8a8b3;">Mira tu terminal de VS Code para el token temporal.</p>
+                <input type="text" id="verify-code" placeholder="Código">
+                <button onclick="ejecutarVerificacion()">ENLAZAR</button>
+            </div>
+        </div>
+
+        <div id="chat-window">
+            <div id="header-chat">
+                <h3 id="chat-titulo-actual">Consola Inicializada. Esperando comandos...</h3>
+                <button style="background:none; border:1px solid #e74c3c; color:#e74c3c; padding:8px; border-radius:6px; cursor:pointer;" onclick="ejecutarLogout()">Salir</button>
+            </div>
+
+            <div id="chat-box"></div>
+
+            <div id="preview-container">
+                <img id="preview-img" src="" alt="preview">
+                <span style="font-size:13px; color:#94a3b8;">Imagen lista para análisis</span>
+                <button class="btn-cancelar-img" onclick="cancelarImagenAdjunta()">✕ Quitar</button>
+            </div>
+
+            <div id="input-area">
+                <select id="selector-modelo">
+                    <option value="flash">⚡ MAX Flash</option>
+                    <option value="pro">🔥 MAX Pro</option>
+                </select>
+                
+                <input type="file" id="file-uploader" accept="image/*" style="display: none;" onchange="procesarArchivoImagen(this)">
+                <button class="btn-adjuntar" onclick="document.getElementById('file-uploader').click()">📎</button>
+                
+                <input type="text" id="user-input" placeholder="Pregunta algo, sube una foto o escribe 'Crea una imagen de...'" onkeypress="evaluarEnter(event)">
+                <button id="send-btn" onclick="enviarMensaje()">Enviar</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let chatActivoId = null;
+        let emailUsuarioActivo = null;
+        let listaChatsLocal = [];
+        let imagenBase64Cargada = null;
+
+        window.onload = function() {
+            verificarEstadoSesion();
+        };
+
+        function verificarEstadoSesion() {
+            fetch('/verificar_sesion')
+            .then(res => res.json())
+            .then(data => {
+                if (data.autenticado) {
+                    emailUsuarioActivo = data.user;
+                    ocultarTodaAuth();
+                    cargarHistorialChats();
+                } else {
+                    cambiarVistaAuth('login');
+                }
+            });
+        }
+
+        function cambiarVistaAuth(p) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('register-screen').style.display = 'none';
+            document.getElementById('verify-screen').style.display = 'none';
+            if (p === 'login') document.getElementById('login-screen').style.display = 'flex';
+            if (p === 'register') document.getElementById('register-screen').style.display = 'flex';
+            if (p === 'verify') document.getElementById('verify-screen').style.display = 'flex';
+        }
+
+        function ocultarTodaAuth() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('register-screen').style.display = 'none';
+            document.getElementById('verify-screen').style.display = 'none';
+        }
+
+        function ejecutarRegistro() {
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+            fetch('/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: email, pass: pass})
+            }).then(res => res.json()).then(data => data.success ? cambiarVistaAuth('verify') : alert(data.error));
+        }
+
+        function ejecutarVerificacion() {
+            const email = document.getElementById('reg-email').value || document.getElementById('login-email').value;
+            const codigo = document.getElementById('verify-code').value;
+            fetch('/verificar_codigo', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: email, codigo: codigo})
+            }).then(res => res.json()).then(data => data.success ? cambiarVistaAuth('login') : alert(data.error));
+        }
+
+        function ejecutarLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            fetch('/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: email, pass: pass})
+            }).then(res => res.json()).then(data => {
+                if (data.success) { emailUsuarioActivo = email; ocultarTodaAuth(); cargarHistorialChats(); } else { alert(data.error); }
+            });
+        }
+
+        function ejecutarLogout() { fetch('/logout').then(() => location.reload()); }
+
+        function cargarHistorialChats() {
+            fetch('/obtener_chats').then(res => res.json()).then(chats => {
+                listaChatsLocal = chats;
+                renderizarListaChats(chats);
+            });
+        }
+
+        function renderizarListaChats(chats) {
+            const lista = document.getElementById('lista-chats');
+            lista.innerHTML = "";
+            if (chats.length === 0 && document.getElementById('chat-search').value === "") { crearNuevoChat(); return; }
+            chats.forEach((c, i) => {
+                const li = document.createElement('li');
+                li.className = `chat-item ${c.id === chatActivoId ? 'activo' : ''}`;
+                li.innerText = "💬 " + c.titulo;
+                li.onclick = () => seleccionarChat(c.id, c.titulo);
+                lista.appendChild(li);
+                if (i === 0 && !chatActivoId) seleccionarChat(c.id, c.titulo);
+            });
+        }
+
+        function filtrarChats() {
+            const query = document.getElementById('chat-search').value.toLowerCase().trim();
+            renderizarListaChats(listaChatsLocal.filter(c => c.titulo.toLowerCase().includes(query)));
+        }
+
+        function crearNuevoChat() {
+            fetch('/crear_chat', {method: 'POST'}).then(res => res.json()).then(data => {
+                chatActivoId = data.chat_id;
+                document.getElementById('chat-box').innerHTML = "";
+                document.getElementById('chat-titulo-actual').innerText = "Nueva conversación";
+                cargarHistorialChats();
+            });
+        }
+
+        function seleccionarChat(id, titulo) {
+            chatActivoId = id;
+            document.getElementById('chat-titulo-actual').innerText = titulo;
+            
+            fetch(`/obtener_mensajes?chat_id=${id}`)
+            .then(res => res.json())
+            .then(mensajes => {
+                const box = document.getElementById('chat-box');
+                box.innerHTML = "";
+                mensajes.forEach(m => renderizarMensajeEnPantalla(m.role, m.content, m.image_data));
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        function procesarArchivoImagen(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagenBase64Cargada = e.target.result;
+                    document.getElementById('preview-img').src = imagenBase64Cargada;
+                    document.getElementById('preview-container').style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function cancelarImagenAdjunta() {
+            imagenBase64Cargada = null;
+            document.getElementById('file-uploader').value = "";
+            document.getElementById('preview-container').style.display = 'none';
+        }
+
+        function evaluarEnter(e) { if (e.key === 'Enter') enviarMensaje(); }
+
+        function enviarMensaje() {
+            const input = document.getElementById('user-input');
+            const texto = input.value.trim();
+            const modelo = document.getElementById('selector-modelo').value;
+
+            if (!texto && !imagenBase64Cargada) return;
+
+            // --- LÓGICA DE GENERACIÓN DE IMAGEN ---
+            if (texto.toLowerCase().includes("genera una imagen de")) {
+                renderizarMensajeEnPantalla('user', texto, imagenBase64Cargada);
+                input.value = "";
+                cancelarImagenAdjunta();
+                
+                fetch('/generar_imagen', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({prompt: texto})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        renderizarMensajeEnPantalla('assistant', "Aquí tienes tu imagen:", data.url);
+                    } else {
+                        renderizarMensajeEnPantalla('assistant', "Error al generar: " + data.error, null);
+                    }
+                });
+                return;
+            }
+
+            // --- FLUJO NORMAL DE CHAT ---
+            renderizarMensajeEnPantalla('user', texto, imagenBase64Cargada);
+            
+            const datosEnviar = {
+                mensaje: texto,
+                chat_id: chatActivoId,
+                modelo: modelo,
+                imagen: imagenBase64Cargada
+            };
+
+            input.value = "";
+            cancelarImagenAdjunta();
+
+            const box = document.getElementById('chat-box');
+            box.scrollTop = box.scrollHeight;
+
+            fetch('/preguntar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(datosEnviar)
+            })
+            .then(res => res.json())
+            .then(data => {
+                renderizarMensajeEnPantalla('assistant', data.respuesta, data.imagen);
+                box.scrollTop = box.scrollHeight;
+                
+                fetch('/obtener_chats').then(r => r.json()).then(chats => {
+                    listaChatsLocal = chats;
+                    const act = chats.find(c => c.id === chatActivoId);
+                    if (act) document.getElementById('chat-titulo-actual').innerText = act.titulo;
+                    filtrarChats();
+                });
+            });
+        }
+
+        function renderizarMensajeEnPantalla(rol, contenido, dataImagen) {
+            const box = document.getElementById('chat-box');
+            const div = document.createElement('div');
+            div.className = `message ${rol === 'user' ? 'user-message' : 'ia-message'}`;
+
+            if (dataImagen) {
+                const img = document.createElement('img');
+                img.src = dataImagen;
+                img.className = 'chat-img-render';
+                div.appendChild(img);
+            }
+
+            if (contenido && (contenido.includes('http') && (contenido.endsWith('.png') || contenido.endsWith('.jpg') || contenido.includes('dalle')))) {
+                // Si el contenido es una URL de imagen de la API
+                const img = document.createElement('img');
+                img.src = contenido;
+                img.className = 'chat-img-render';
+                div.appendChild(img);
+            } else if (contenido.includes('```')) {
+                const partes = contenido.split('```');
+                for (let i = 0; i < partes.length; i++) {
+                    if (i % 2 === 1) {
+                        const lineas = partes[i].split('\n');
+                        if (['python', 'javascript', 'html', 'css'].includes(lineas[0].toLowerCase().trim())) lineas.shift();
+                        const pre = document.createElement('pre');
+                        const code = document.createElement('code');
+                        code.textContent = lineas.join('\n').trim();
+                        pre.appendChild(code);
+                        div.appendChild(pre);
+                    } else {
+                        if (partes[i].trim()) {
+                            const p = document.createElement('p');
+                            p.textContent = partes[i].trim();
+                            div.appendChild(p);
+                        }
+                    }
+                }
+            } else if (contenido) {
+                const p = document.createElement('p');
+                p.textContent = contenido;
+                div.appendChild(p);
+            }
+
+            box.appendChild(div);
+        }
+
+        function crearNuevoNotebook() {
+            const n = prompt("Nombre del Notebook:");
+            if(n) {
+                const li = document.createElement('li');
+                li.className = 'notebook-item';
+                li.innerText = "📁 " + n;
+                document.getElementById('lista-notebooks').insertBefore(li, document.getElementById('lista-notebooks').lastElementChild);
+            }
+        }
+    </script>
+</body>
+</html>
